@@ -4,7 +4,10 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,8 +23,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.security.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import nl.semekkelboom.todoimtpmd.models.Todo;
 
 public class UserAreaActivity extends AppCompatActivity {
 
@@ -31,11 +39,16 @@ public class UserAreaActivity extends AppCompatActivity {
         setContentView(R.layout.activity_user_area);
 
         TextView tv = (TextView) findViewById(R.id.textView2);
-        final TextView tv2 = (TextView) findViewById(R.id.textView3);
+        ListView lv = (ListView) findViewById(R.id.LVTODOS);
 
         Bundle extras = getIntent().getExtras();
         String email = extras.getString("email");
         final String authtoken = extras.getString("authtoken");
+        final ArrayList<Todo> todos = new ArrayList<Todo>();
+
+        final BaseAdapter la = new ArrayAdapter<Todo>(this, android.R.layout.simple_list_item_1, todos);
+
+        lv.setAdapter(la);
 
         tv.setText("Welcome " + email);
 
@@ -51,18 +64,22 @@ public class UserAreaActivity extends AppCompatActivity {
                 try {
                     JSONArray ja = response.getJSONArray("todos");
                     if(ja.length() == 0) {
-                        tv2.setText("You don't have any ToDo's yet!");
+
                     } else {
                         for (int i = 0; i < ja.length(); i++) {
                             JSONObject object = ja.getJSONObject(i);
                             String text = object.getString("text");
                             System.out.println("######## " + text + " ######");
                             if (object.getBoolean("completed")) {
-                                tv2.setText("Todo: " + text + " DONE!\n" + tv2.getText());
+                                Todo td = new Todo(object.getString("_id"), object.getString("text"), object.getString("_creator"), object.getBoolean("completed"), object.getLong("completedAt"));
+                                todos.add(td);
                             } else {
-                                tv2.setText("Todo: " + text + "\n" + tv2.getText());
+                                Todo td = new Todo(object.getString("_id"), object.getString("text"), object.getString("_creator"), object.getBoolean("completed"));
+                                todos.add(td);
                             }
+                            Log.d("TodoArray", todos.toString());
                         }
+                        la.notifyDataSetChanged();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();

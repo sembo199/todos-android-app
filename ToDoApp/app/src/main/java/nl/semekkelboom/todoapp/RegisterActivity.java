@@ -38,7 +38,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         bRegister.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Log.d("Onclick:", "HIJ DOET MAAR WAT -------------");
+                Log.d("Onclick:", "Register -------------");
                 final String URL = "https://peaceful-scrubland-20759.herokuapp.com/users";
                 HashMap<String, String> params = new HashMap<String, String>();
                 params.put("email", etEmail.getText().toString());

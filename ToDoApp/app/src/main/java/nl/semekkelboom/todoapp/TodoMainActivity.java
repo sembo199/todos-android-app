@@ -1,9 +1,11 @@
 package nl.semekkelboom.todoapp;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
@@ -87,8 +89,66 @@ public class TodoMainActivity extends AppCompatActivity
 
         lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                System.out.println( todos.get(position).toString());
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                final Todo td = todos.get(position);
+                System.out.println( td.toString());
+                AlertDialog.Builder builder = new AlertDialog.Builder(TodoMainActivity.this);
+
+                builder.setTitle("Delete Todo?");
+                builder.setMessage("Are you sure you want to delete the following todo: " + td.toString() + "?");
+                builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Remove the Todo
+                        final String URL = "https://peaceful-scrubland-20759.herokuapp.com/todos/" + td.get_id();
+
+                        JsonObjectRequest req = new JsonObjectRequest(Request.Method.DELETE,URL,
+                                null, new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                Log.d("Response", response.toString());
+                                try {
+                                    JSONObject todoback = response.getJSONObject("todo");
+                                    System.out.println(todoback);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }, new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                VolleyLog.d("Something wrong", "Error: " + error.getMessage());
+                                Log.e("Something wrong again", "Site Info Error: " + error.getMessage());
+                            }
+                        }) {
+                            @Override
+                            public Map<String, String> getHeaders() throws AuthFailureError {
+                                HashMap<String, String> headers = new HashMap<String, String>();
+                                headers.put("Content-Type", "application/json");
+                                headers.put("x-auth", user.getAuthtoken());
+                                return headers;
+                            }
+                        };
+
+                        Volley.newRequestQueue(getApplicationContext()).add(req);
+                        todos.remove(position);
+                        la.notifyDataSetChanged();
+                        dialog.dismiss();
+                    }
+                });
+
+                builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Do not remove Todo
+                        dialog.dismiss();
+                    }
+                });
+
+                AlertDialog alert = builder.create();
+                alert.show();
                 return true;
             }
         });

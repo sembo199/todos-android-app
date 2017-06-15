@@ -47,4 +47,8 @@ public class Todo {
             return "Todo: " + text;
         }
     }
+
+    public String get_id() {
+        return _id;
+    }
 }

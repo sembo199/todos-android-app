@@ -35,11 +35,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import nl.semekkelboom.todoapp.models.Todo;
+import nl.semekkelboom.todoapp.models.User;
 
 public class TodoMainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -64,19 +66,34 @@ public class TodoMainActivity extends AppCompatActivity
         ListView lv = (ListView) findViewById(R.id.LVTODOS);
 
         Bundle extras = getIntent().getExtras();
-        String email = extras.getString("email");
-        final String authtoken = extras.getString("authtoken");
+        final User user = (User) extras.getSerializable("user");
+
         final ArrayList<Todo> todos = new ArrayList<Todo>();
 
         View headerView = navigationView.getHeaderView(0);
         TextView navdrawerTitle = (TextView) headerView.findViewById(R.id.navdrawerTitle);
-        navdrawerTitle.setText(email);
+        navdrawerTitle.setText(user.getEmail());
 
         final BaseAdapter la = new ArrayAdapter<Todo>(this, android.R.layout.simple_list_item_1, todos);
 
         lv.setAdapter(la);
 
-        tv.setText("Welcome " + email);
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                System.out.println(todos.get(position).toString());
+            }
+        });
+
+        lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                System.out.println( todos.get(position).toString());
+                return true;
+            }
+        });
+
+        tv.setText("Welcome " + user.getEmail());
 
         Log.d("OnLoad:", "Ophalen van todos -------------");
         final String URL = "https://peaceful-scrubland-20759.herokuapp.com/todos";
@@ -122,27 +139,12 @@ public class TodoMainActivity extends AppCompatActivity
             public Map<String, String> getHeaders() throws AuthFailureError {
                 HashMap<String, String> headers = new HashMap<String, String>();
                 headers.put("Content-Type", "application/json");
-                headers.put("x-auth", authtoken);
+                headers.put("x-auth", user.getAuthtoken());
                 return headers;
             }
         };
 
         Volley.newRequestQueue(getApplicationContext()).add(req);
-
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                System.out.println(todos.get(position).toString());
-            }
-        });
-
-        lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                System.out.println( todos.get(position).toString());
-                return true;
-            }
-        });
     }
 
     @Override

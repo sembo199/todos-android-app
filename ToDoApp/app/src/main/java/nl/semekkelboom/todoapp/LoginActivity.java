@@ -22,6 +22,8 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 
+import nl.semekkelboom.todoapp.models.User;
+
 public class LoginActivity extends AppCompatActivity {
 
     @Override
@@ -72,8 +74,9 @@ public class LoginActivity extends AppCompatActivity {
                                         System.out.println(response);
                                         System.out.println("Id: " + id + "\nEmail: " + email + "\nToken: " + authtoken);
                                         Intent i = new Intent(LoginActivity.this, TodoMainActivity.class);
-                                        i.putExtra("email", email);
-                                        i.putExtra("authtoken", authtoken);
+                                        Bundle bundle = new Bundle();
+                                        bundle.putSerializable("user",new User(id, email, authtoken));
+                                        i.putExtras(bundle);
                                         LoginActivity.this.startActivity(i);
                                     } catch (JSONException e) {
                                         e.printStackTrace();

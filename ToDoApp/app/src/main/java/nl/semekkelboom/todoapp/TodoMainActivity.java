@@ -1,5 +1,6 @@
 package nl.semekkelboom.todoapp;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -498,6 +499,11 @@ public class TodoMainActivity extends AppCompatActivity
 
         }  else if (id == R.id.nav_logout) {
             System.out.println("LOGOUT -------------------");
+            final ProgressDialog progress = new ProgressDialog(TodoMainActivity.this);
+            progress.setTitle("Loading");
+            progress.setMessage("Logging you out...");
+            progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
+            progress.show();
             String URL = "https://peaceful-scrubland-20759.herokuapp.com/users/me/token";
             // Request a string response from the provided URL.
             StringRequest stringRequest = new StringRequest(Request.Method.DELETE, URL,
@@ -506,6 +512,7 @@ public class TodoMainActivity extends AppCompatActivity
                         public void onResponse(String response) {
                             // Display the first 500 characters of the response string.
                             Log.d("RESPONSE", "We are logged out :)");
+                            progress.dismiss();
                             TodoMainActivity.this.finish();
 //                            TodoMainActivity.this.startActivity(new Intent(TodoMainActivity.this, LoginActivity.class));
                         }
@@ -513,6 +520,7 @@ public class TodoMainActivity extends AppCompatActivity
                 @Override
                 public void onErrorResponse(VolleyError error) {
                     Log.e("Volley:", error.getMessage());
+                    progress.dismiss();
                 }
             }) {
                 @Override

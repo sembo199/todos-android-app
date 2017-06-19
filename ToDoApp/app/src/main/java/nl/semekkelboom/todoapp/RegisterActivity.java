@@ -1,5 +1,7 @@
 package nl.semekkelboom.todoapp;
 
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -10,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -39,34 +42,57 @@ public class RegisterActivity extends AppCompatActivity {
         bRegister.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Log.d("Onclick:", "Register -------------");
+                final ProgressDialog progress = new ProgressDialog(RegisterActivity.this);
+                progress.setTitle("Loading");
+                progress.setMessage("Trying to register, waiting for redirect...");
+                progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
+                progress.show();
                 final String URL = "https://peaceful-scrubland-20759.herokuapp.com/users";
                 HashMap<String, String> params = new HashMap<String, String>();
                 params.put("email", etEmail.getText().toString());
                 params.put("password", etPassword.getText().toString());
 
-                JsonObjectRequest request_json = new JsonObjectRequest(URL, new JSONObject(params),
-                        new Response.Listener<JSONObject>() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                try {
-                                    String id = response.getString("_id"),
-                                            email = response.getString("email");
-                                    System.out.println("Id: "+id+"\nEmail: "+email);
-                                    Intent i = new Intent(RegisterActivity.this, LoginActivity.class);
-                                    i.putExtra("email", email);
-                                    RegisterActivity.this.startActivity(i);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        VolleyLog.e("Error: ", error.getMessage());
-                    }
-                });
+                if (etPassword.getText().length() < 8) {
+                    progress.dismiss();
+                    Context context = getApplicationContext();
+                    CharSequence text = "Password should at least be 8 characters long!";
+                    int duration = Toast.LENGTH_LONG;
 
-                Volley.newRequestQueue(getApplicationContext()).add(request_json);
+                    Toast toast = Toast.makeText(context, text, duration);
+                    toast.show();
+                } else {
+                    JsonObjectRequest request_json = new JsonObjectRequest(URL, new JSONObject(params),
+                            new Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(JSONObject response) {
+                                    progress.dismiss();
+                                    try {
+                                        String id = response.getString("_id"),
+                                                email = response.getString("email");
+                                        System.out.println("Id: "+id+"\nEmail: "+email);
+                                        Intent i = new Intent(RegisterActivity.this, LoginActivity.class);
+                                        i.putExtra("email", email);
+                                        RegisterActivity.this.startActivity(i);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            VolleyLog.e("Error: ", error.getMessage());
+                            progress.dismiss();
+                            Context context = getApplicationContext();
+                            CharSequence text = "Something went wrong...\nIs your email correct?";
+                            int duration = Toast.LENGTH_LONG;
+
+                            Toast toast = Toast.makeText(context, text, duration);
+                            toast.show();
+                        }
+                    });
+
+                    Volley.newRequestQueue(getApplicationContext()).add(request_json);
+                }
             }
         });
     }

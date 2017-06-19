@@ -226,6 +226,8 @@ public class TodoMainActivity extends AppCompatActivity
 
                 final EditText et = new EditText(TodoMainActivity.this);
                 et.setText(td.getText());
+                et.setFocusable(!td.isCompleted());
+                // Todo: Melding als todo al gecomplete is dus tekst niet gewijzigd kan worden, bvb na onclick op editText
 
                 ll.addView(et);
                 ll.addView(cb);

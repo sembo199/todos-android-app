@@ -1,6 +1,8 @@
 package nl.semekkelboom.todoapp;
 
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -22,8 +24,10 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -71,11 +75,6 @@ public class TodoMainActivity extends AppCompatActivity
         final User user = (User) extras.getSerializable("user");
 
         final ArrayList<Todo> todos = new ArrayList<Todo>();
-
-        View headerView = navigationView.getHeaderView(0);
-        TextView navdrawerTitle = (TextView) headerView.findViewById(R.id.navdrawerTitle);
-        navdrawerTitle.setText(user.getEmail());
-
         final BaseAdapter la = new ArrayAdapter<Todo>(this, android.R.layout.simple_list_item_1, todos);
 
         lv.setAdapter(la);
@@ -86,6 +85,122 @@ public class TodoMainActivity extends AppCompatActivity
                 System.out.println(todos.get(position).toString());
             }
         });
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final AlertDialog.Builder alert = new AlertDialog.Builder(TodoMainActivity.this);
+
+                alert.setTitle("Add new Todo");
+                alert.setMessage("Give the text of your new todo:");
+
+                // Set an EditText view to get user input
+                final EditText input = new EditText(TodoMainActivity.this);
+                alert.setView(input);
+
+                alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        // Send request to API
+                        Log.d("Onclick:", "Add Todo -------------");
+                        final String URL = "https://peaceful-scrubland-20759.herokuapp.com/todos";
+                        HashMap<String, String> params = new HashMap<String, String>();
+                        params.put("text", input.getText().toString());
+
+                        MetaRequest request_json = new MetaRequest(URL, new JSONObject(params),
+                                new Response.Listener<JSONObject>() {
+                                    @Override
+                                    public void onResponse(JSONObject response) {
+                                        Log.d("OnLoad:", "Ophalen van todos -------------");
+                                        todos.clear();
+                                        final String URL = "https://peaceful-scrubland-20759.herokuapp.com/todos";
+
+                                        JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET,URL,
+                                                null, new Response.Listener<JSONObject>() {
+
+                                            @Override
+                                            public void onResponse(JSONObject response) {
+                                                Log.d("Response", response.toString());
+                                                try {
+                                                    JSONArray ja = response.getJSONArray("todos");
+                                                    if(ja.length() == 0) {
+
+                                                    } else {
+                                                        for (int i = 0; i < ja.length(); i++) {
+                                                            JSONObject object = ja.getJSONObject(i);
+                                                            String text = object.getString("text");
+                                                            System.out.println("######## " + text + " ######");
+                                                            if (object.getBoolean("completed")) {
+                                                                Todo td = new Todo(object.getString("_id"), object.getString("text"), object.getString("_creator"), object.getBoolean("completed"), object.getLong("completedAt"));
+                                                                todos.add(td);
+                                                            } else {
+                                                                Todo td = new Todo(object.getString("_id"), object.getString("text"), object.getString("_creator"), object.getBoolean("completed"));
+                                                                todos.add(td);
+                                                            }
+                                                            Log.d("TodoArray", todos.toString());
+                                                        }
+                                                        la.notifyDataSetChanged();
+                                                    }
+                                                } catch (JSONException e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        }, new Response.ErrorListener() {
+                                            @Override
+                                            public void onErrorResponse(VolleyError error) {
+                                                VolleyLog.d("Something wrong", "Error: " + error.getMessage());
+                                                Log.e("Something wrong again", "Site Info Error: " + error.getMessage());
+                                            }
+                                        }) {
+                                            @Override
+                                            public Map<String, String> getHeaders() throws AuthFailureError {
+                                                HashMap<String, String> headers = new HashMap<String, String>();
+                                                headers.put("Content-Type", "application/json");
+                                                headers.put("x-auth", user.getAuthtoken());
+                                                return headers;
+                                            }
+                                        };
+
+                                        Volley.newRequestQueue(getApplicationContext()).add(req);
+                                    }
+                                }, new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Context context = getApplicationContext();
+                                CharSequence text = "Something went wrong!";
+                                int duration = Toast.LENGTH_LONG;
+
+                                Toast toast = Toast.makeText(context, text, duration);
+                                toast.show();
+                                VolleyLog.e("Error: ", error.getMessage());
+                            }
+                        }) {
+                            @Override
+                            public Map<String, String> getHeaders() throws AuthFailureError {
+                                HashMap<String, String> headers = new HashMap<String, String>();
+                                headers.put("Content-Type", "application/json");
+                                headers.put("x-auth", user.getAuthtoken());
+                                return headers;
+                            }
+                        };
+
+                        Volley.newRequestQueue(getApplicationContext()).add(request_json);
+                    }
+                });
+
+                alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        // Canceled.
+                    }
+                });
+
+                alert.show();
+            }
+        });
+
+        View headerView = navigationView.getHeaderView(0);
+        TextView navdrawerTitle = (TextView) headerView.findViewById(R.id.navdrawerTitle);
+        navdrawerTitle.setText(user.getEmail());
 
         lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
@@ -229,9 +344,9 @@ public class TodoMainActivity extends AppCompatActivity
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+//        int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
+        // noinspection SimplifiableIfStatement
 //        if (id == R.id.action_settings) {
 //            return true;
 //        }
@@ -246,8 +361,8 @@ public class TodoMainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+//            // Handle the camera action
+//        } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_slideshow) {
 

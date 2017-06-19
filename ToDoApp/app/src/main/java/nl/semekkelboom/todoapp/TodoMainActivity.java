@@ -37,6 +37,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
@@ -53,6 +54,8 @@ import nl.semekkelboom.todoapp.models.User;
 
 public class TodoMainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    public static User user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +78,7 @@ public class TodoMainActivity extends AppCompatActivity
 
         Bundle extras = getIntent().getExtras();
         final User user = (User) extras.getSerializable("user");
+        this.user = user;
 
         final ArrayList<Todo> todos = new ArrayList<Todo>();
         final BaseAdapter la = new ArrayAdapter<Todo>(this, android.R.layout.simple_list_item_1, todos);
@@ -488,14 +492,38 @@ public class TodoMainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-//            // Handle the camera action
-//        } else if (id == R.id.nav_gallery) {
+        if (id == R.id.nav_todos) {
 
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.nav_profile) {
 
-        }  else if (id == R.id.nav_share) {
+        }  else if (id == R.id.nav_logout) {
+            System.out.println("LOGOUT -------------------");
+            String URL = "https://peaceful-scrubland-20759.herokuapp.com/users/me/token";
+            // Request a string response from the provided URL.
+            StringRequest stringRequest = new StringRequest(Request.Method.DELETE, URL,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            // Display the first 500 characters of the response string.
+                            Log.d("RESPONSE", "We are logged out :)");
+                            TodoMainActivity.this.finish();
+//                            TodoMainActivity.this.startActivity(new Intent(TodoMainActivity.this, LoginActivity.class));
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.e("Volley:", error.getMessage());
+                }
+            }) {
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    HashMap<String, String> headers = new HashMap<String, String>();
+                    headers.put("x-auth", user.getAuthtoken());
+                    return headers;
+                }
+            };
 
+            Volley.newRequestQueue(getApplicationContext()).add(stringRequest);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

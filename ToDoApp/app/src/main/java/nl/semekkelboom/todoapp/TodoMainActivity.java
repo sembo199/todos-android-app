@@ -222,6 +222,7 @@ public class TodoMainActivity extends AppCompatActivity
 
                 final CheckBox cb = new CheckBox(TodoMainActivity.this);
                 cb.setText("Completed: " + td.getText());
+                cb.setChecked(td.isCompleted());
 
                 final EditText et = new EditText(TodoMainActivity.this);
                 et.setText(td.getText());
@@ -235,10 +236,10 @@ public class TodoMainActivity extends AppCompatActivity
 
                     public void onClick(DialogInterface dialog, int which) {
                         // update todo
-
                         Log.d("Onclick:", "Update Todo -------------");
                         final String URL = "https://peaceful-scrubland-20759.herokuapp.com/todos/" + td.get_id();
-                        HashMap<String, String> params = new HashMap<String, String>();
+                        System.out.println(td.get_id()+ "\n" + URL);
+                        JSONObject obj = new JSONObject();
 
                         if (td.getText().equals(et.getText().toString()) && td.isCompleted() == cb.isChecked()) {
                             System.out.println("nothing changed");
@@ -248,21 +249,64 @@ public class TodoMainActivity extends AppCompatActivity
 
                             Log.d("checked value", String.valueOf(cb.isChecked()));
 
-                            params.put("completed", String.valueOf(cb.isChecked()));
-                            params.put("text", et.getText().toString());
-
+                            try {
+                                obj.put("completed", cb.isChecked());
+                                obj.put("text", et.getText().toString());
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         } else if (!td.getText().equals(et.getText().toString())) {
                             System.out.println("text changed");
-                            params.put("text", et.getText().toString());
+                            try {
+                                obj.put("text", et.getText().toString());
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
 
                         } else if (td.isCompleted() != cb.isChecked()) {
                             System.out.println("completed changed");
-                            params.put("completed", String.valueOf(cb.isChecked()));
+                            try {
+                                obj.put("completed", cb.isChecked());
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         }
 
+                        JsonObjectRequest req = new JsonObjectRequest(Request.Method.PATCH,URL,
+                                obj, new Response.Listener<JSONObject>() {
 
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                Log.d("Response", response.toString());
+                                try {
+                                    JSONObject updatedTodo = response.getJSONObject("todo");
+                                    if (updatedTodo.getBoolean("completed")) {
+                                        todos.set(position, new Todo(updatedTodo.getString("_id"), updatedTodo.getString("text"), updatedTodo.getString("_creator"), updatedTodo.getBoolean("completed"), updatedTodo.getLong("completedAt")));
+                                    } else {
+                                        todos.set(position, new Todo(updatedTodo.getString("_id"), updatedTodo.getString("text"), updatedTodo.getString("_creator"), updatedTodo.getBoolean("completed")));
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                                la.notifyDataSetChanged();
+                            }
+                        }, new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                VolleyLog.d("Something wrong", "Error: " + error.getMessage());
+                                Log.e("Something wrong again", "Site Info Error: " + error.getMessage());
+                            }
+                        }) {
+                            @Override
+                            public Map<String, String> getHeaders() throws AuthFailureError {
+                                HashMap<String, String> headers = new HashMap<String, String>();
+                                headers.put("Content-Type", "application/json");
+                                headers.put("x-auth", user.getAuthtoken());
+                                return headers;
+                            }
+                        };
 
-
+                        Volley.newRequestQueue(getApplicationContext()).add(req);
 
                         dialog.dismiss();
                     }

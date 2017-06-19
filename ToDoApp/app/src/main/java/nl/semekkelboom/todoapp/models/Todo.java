@@ -42,9 +42,9 @@ public class Todo {
             Date d = new Date();
             d.setTime(this.completedAt);
             output = formatter.format(d);
-            return "Todo: " + text + "\nDone: " + output;
+            return "[DONE] " + text + "\nCompleted at: " + output;
         } else {
-            return "Todo: " + text;
+            return text;
         }
     }
 

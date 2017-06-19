@@ -65,10 +65,10 @@ public class LoginActivity extends AppCompatActivity {
                     progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
                     progress.show();
                     HashMap<String, String> params = new HashMap<String, String>();
-                    params.put("email", etEmail.getText().toString());
-                    params.put("password", etPassword.getText().toString());
-//                    params.put("email", "bvbovene@gmail.com");
-//                    params.put("password", "12345678");
+//                    params.put("email", etEmail.getText().toString());
+//                    params.put("password", etPassword.getText().toString());
+                    params.put("email", "bvbovene@gmail.com");
+                    params.put("password", "12345678");
 
                     MetaRequest request_json = new MetaRequest(URL, new JSONObject(params),
                             new Response.Listener<JSONObject>() {

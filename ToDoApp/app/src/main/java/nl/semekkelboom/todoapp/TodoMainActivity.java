@@ -24,7 +24,9 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -201,6 +203,86 @@ public class TodoMainActivity extends AppCompatActivity
         View headerView = navigationView.getHeaderView(0);
         TextView navdrawerTitle = (TextView) headerView.findViewById(R.id.navdrawerTitle);
         navdrawerTitle.setText(user.getEmail());
+
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+                final Todo td = todos.get(position);
+                System.out.println(td.toString());
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(TodoMainActivity.this);
+
+                builder.setTitle("Update Todo");
+                builder.setMessage("Change your todo: " + td.toString() + " or complete it?");
+
+                LinearLayout ll = new LinearLayout(TodoMainActivity.this);
+                ll.setLayoutParams( new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT));
+                ll.setOrientation(LinearLayout.VERTICAL);
+
+                final CheckBox cb = new CheckBox(TodoMainActivity.this);
+                cb.setText("Completed: " + td.getText());
+
+                final EditText et = new EditText(TodoMainActivity.this);
+                et.setText(td.getText());
+
+                ll.addView(et);
+                ll.addView(cb);
+
+                builder.setView(ll);
+
+                builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which) {
+                        // update todo
+
+                        Log.d("Onclick:", "Update Todo -------------");
+                        final String URL = "https://peaceful-scrubland-20759.herokuapp.com/todos/" + td.get_id();
+                        HashMap<String, String> params = new HashMap<String, String>();
+
+                        if (td.getText().equals(et.getText().toString()) && td.isCompleted() == cb.isChecked()) {
+                            System.out.println("nothing changed");
+                            return;
+                        } else if (!td.getText().equals(et.getText().toString()) && td.isCompleted() != cb.isChecked()) {
+                            System.out.println("both changed");
+
+                            Log.d("checked value", String.valueOf(cb.isChecked()));
+
+                            params.put("completed", String.valueOf(cb.isChecked()));
+                            params.put("text", et.getText().toString());
+
+                        } else if (!td.getText().equals(et.getText().toString())) {
+                            System.out.println("text changed");
+                            params.put("text", et.getText().toString());
+
+                        } else if (td.isCompleted() != cb.isChecked()) {
+                            System.out.println("completed changed");
+                            params.put("completed", String.valueOf(cb.isChecked()));
+                        }
+
+
+
+
+
+                        dialog.dismiss();
+                    }
+                });
+
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Do not update Todo
+                        dialog.dismiss();
+                    }
+                });
+
+                AlertDialog alert = builder.create();
+                alert.show();
+
+            }
+        });
+
 
         lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override

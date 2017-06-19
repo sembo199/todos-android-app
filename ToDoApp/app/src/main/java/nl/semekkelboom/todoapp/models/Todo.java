@@ -51,4 +51,20 @@ public class Todo {
     public String get_id() {
         return _id;
     }
+
+    public String getText() {
+        return text;
+    }
+
+    public String get_creator() {
+        return _creator;
+    }
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public long getCompletedAt() {
+        return completedAt;
+    }
 }

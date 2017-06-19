@@ -1,5 +1,6 @@
 package nl.semekkelboom.todoapp;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -37,6 +38,8 @@ public class LoginActivity extends AppCompatActivity {
         final TextView tv = (TextView) findViewById(R.id.textView);
         final Button bRegister = (Button) findViewById(R.id.bRegister);
 
+        etEmail.requestFocus();
+
         String email;
         Bundle extras = getIntent().getExtras();
         if(extras != null) {
@@ -56,6 +59,11 @@ public class LoginActivity extends AppCompatActivity {
                 } else {
                     Log.d("Onclick:", "Inloggen -------------");
                     final String URL = "https://peaceful-scrubland-20759.herokuapp.com/users/login";
+                    final ProgressDialog progress = new ProgressDialog(LoginActivity.this);
+                    progress.setTitle("Loading");
+                    progress.setMessage("Wait while loading...");
+                    progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
+                    progress.show();
                     HashMap<String, String> params = new HashMap<String, String>();
                     params.put("email", etEmail.getText().toString());
                     params.put("password", etPassword.getText().toString());
@@ -66,6 +74,7 @@ public class LoginActivity extends AppCompatActivity {
                             new Response.Listener<JSONObject>() {
                                 @Override
                                 public void onResponse(JSONObject response) {
+                                    progress.dismiss();
                                     try {
                                         JSONObject headers = response.getJSONObject("headers");
                                         String authtoken = headers.getString("X-Auth");

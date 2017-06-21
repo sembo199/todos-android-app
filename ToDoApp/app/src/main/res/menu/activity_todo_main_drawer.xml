@@ -19,12 +19,12 @@
     <item android:title="Communicate">
         <menu>
             <item
-                android:id="@+id/nav_share"
+                android:id="@+id/nav_contact"
                 android:icon="@drawable/ic_contact_mail_black_24px"
                 android:title="Contact" />
 
             <item
-                android:id="@+id/action_bar"
+                android:id="@+id/nav_information"
                 android:icon="@drawable/ic_info_outline_black_24px"
                 android:title="Information" />
         </menu>

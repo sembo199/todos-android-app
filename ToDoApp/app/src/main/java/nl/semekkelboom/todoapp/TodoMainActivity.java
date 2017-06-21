@@ -473,6 +473,14 @@ public class TodoMainActivity extends AppCompatActivity
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        System.out.println("IM BACK BITCHES");
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -494,9 +502,13 @@ public class TodoMainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_todos) {
-
+            Intent intent = getIntent();
+            finish();
+            startActivity(intent);
         } else if (id == R.id.nav_profile) {
-
+            Intent i = new Intent(TodoMainActivity.this, ProfileActivity.class);
+            i.putExtra("user", user);
+            TodoMainActivity.this.startActivity(i);
         }  else if (id == R.id.nav_logout) {
             System.out.println("LOGOUT -------------------");
             final ProgressDialog progress = new ProgressDialog(TodoMainActivity.this);
@@ -504,6 +516,11 @@ public class TodoMainActivity extends AppCompatActivity
             progress.setMessage("Logging you out...");
             progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
             progress.show();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             String URL = "https://peaceful-scrubland-20759.herokuapp.com/users/me/token";
             // Request a string response from the provided URL.
             StringRequest stringRequest = new StringRequest(Request.Method.DELETE, URL,
@@ -532,9 +549,17 @@ public class TodoMainActivity extends AppCompatActivity
             };
 
             Volley.newRequestQueue(getApplicationContext()).add(stringRequest);
+        } else if (id == R.id.nav_contact) {
+            Intent i = new Intent(TodoMainActivity.this, ContactActivity.class);
+            TodoMainActivity.this.startActivity(i);
+        } else if (id == R.id.nav_information) {
+            Intent i = new Intent(TodoMainActivity.this, InformationActivity.class);
+            TodoMainActivity.this.startActivity(i);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.getChildCount();
+
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
